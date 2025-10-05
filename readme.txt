@@ -4,10 +4,10 @@ by William Wallius, Michael Chang, Andre Forestiere, Benjamin Noh
 How to Run
 --------------------
 Use Default Arguments: 
-> python driver.py
+> python src/driver.py
 
 Use Custom Arguments: 
-> python driver.py --algos merge,quicksort --datasets random,duplicates --sizes 100,500,1000 --trials 10 --seed 123 --out results/experiment1.csv --warmup
+> python src/driver.py --algos merge,quicksort --datasets random,duplicates --sizes 100,500,1000 --trials 10 --seed 123 --out results/experiment1.csv --warmup
 
 Accepts the following arguments:
 --algos <algorithms>
