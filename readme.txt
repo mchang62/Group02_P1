@@ -7,7 +7,7 @@ Use Default Arguments:
 > python src/driver.py
 
 Use Custom Arguments: 
-> python src/driver.py --algos merge,quicksort --datasets random,duplicates --sizes 100,500,1000 --trials 10 --seed 123 --out results/experiment1.csv --warmup
+> python src/driver.py --algos merge,quicksort --pivot  --datasets random,duplicates --sizes 100,500,1000 --trials 10 --seed 123 --out results/experiment1.csv --warmup
 
 Accepts the following arguments:
 --algos <algorithms>
@@ -15,6 +15,12 @@ Accepts the following arguments:
     Options: insertion, merge, quicksort, radix
     Example: --algos merge,quicksort
     Default: runs all algorithms in test matrix
+
+--pivot <strategies>
+    Single string of pivot strategy for quicksort
+    Options: median3, first
+    Example: --pivot median3
+    Default: median3
 
 --datasets <types>
     Comma-separated list of dataset types to test
