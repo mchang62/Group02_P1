@@ -6,13 +6,13 @@ import os
 
 from insertion_sort import insertion_sort
 from merge_sort import merge_sort
-from quicksort import quicksort
+from quicksort import quickSort
 from radix_sort import radix_sort
 
 ALGORITHMS = {
     'insertion': insertion_sort,
     'merge': merge_sort,
-    'quicksort': quicksort,
+    'quicksort': quickSort,
     'radix': radix_sort,
 }
 
