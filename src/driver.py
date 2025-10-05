@@ -17,11 +17,16 @@ ALGORITHMS = {
 }
 
 DEFAULT_TEST_MATRIX = [
-        ('random', 1000, ['insertion', 'merge', 'quicksort', 'radix']),
-        # ('nearly_sorted', 5000, ['insertion', 'merge', 'quicksort']),
-        ('reverse', 1000, ['insertion', 'merge', 'quicksort', 'radix']),
-        ('duplicates', 20000, ['insertion', 'merge', 'quicksort', 'radix']),
-    ]
+    ('random', 1000, ['insertion', 'merge', 'quicksort', 'radix']),
+    # ('nearly_sorted', 5000, ['insertion', 'merge', 'quicksort']),
+    ('reverse', 1000, ['insertion', 'merge', 'quicksort', 'radix']),
+    ('duplicates', 20000, ['insertion', 'merge', 'quicksort', 'radix']),
+]
+
+PIVOT_STRATEGIES = [
+    'median3',
+    'first',
+]
 
 
 def generate_dataset(dataset_type, size, seed=None):
@@ -54,7 +59,7 @@ def generate_dataset(dataset_type, size, seed=None):
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
 
-def run_sorting_algorithm(algo_name, data):
+def run_sorting_algorithm(algo_name, data, pivot):
     """
     Run a sorting algorithm and collect metrics.
     
@@ -75,7 +80,12 @@ def run_sorting_algorithm(algo_name, data):
     
     # Time the sorting
     start_time = time.perf_counter()
-    sorted_data, metrics = algo_func(data_copy)
+    if algo_name == 'quicksort':
+        if pivot not in PIVOT_STRATEGIES:
+            raise ValueError(f"Invalid pivot strategy: {pivot}")
+        sorted_data, metrics = algo_func(data_copy, pivot=pivot)
+    else: 
+        sorted_data, metrics = algo_func(data_copy)
     end_time = time.perf_counter()
     
     # Convert to milliseconds
@@ -174,6 +184,7 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Run sorting algorithm experiments')
     parser.add_argument('--algos', type=str, help='Comma-separated list of algorithms to run (default: all)')
+    parser.add_argument('--pivot', type=str, default='median3', help='Pivot strategy for quicksort (default: median3)')
     parser.add_argument('--datasets', type=str, help='Comma-separated list of datasets (default: all from matrix)')
     parser.add_argument('--sizes', type=str, help='Comma-separated list of sizes (default: from test matrix)')
     parser.add_argument('--trials', type=int, default=5, help='Number of trials per configuration (default: 5)')
@@ -182,7 +193,7 @@ def main():
     parser.add_argument('--warmup', action='store_true', help='Run warmup trial before measurements')
     
     args = parser.parse_args()
-    
+
     # Create results directory and results csv if they don't exist
     os.makedirs(os.path.dirname(args.out) if os.path.dirname(args.out) else '.', exist_ok=True)
     write_csv_header(args.out)
@@ -221,7 +232,7 @@ def main():
             # Warmup run if requested
             if args.warmup:
                 try:
-                    _, _ = run_sorting_algorithm(algo, data)
+                    _, _ = run_sorting_algorithm(algo, data, pivot=args.pivot)
                     print(f"    Warmup complete")
                 except Exception as e:
                     print(f"    Warmup failed: {e}")
@@ -229,7 +240,7 @@ def main():
             # Run trials
             for trial in range(1, args.trials + 1):
                 try:
-                    time_ms, metrics = run_sorting_algorithm(algo, data)
+                    time_ms, metrics = run_sorting_algorithm(algo, data, pivot=args.pivot)
                     
                     row_data = {
                         'algorithm': algo,
