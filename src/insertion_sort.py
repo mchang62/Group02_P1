@@ -3,7 +3,7 @@ def insertionSort(numbers):
     """
     Sorts a list of integers using the insertion sort algorithm.
 
-    Args: 
+    Args:
         numbers (list[int]): The list of integers to sort.
     Returns:
         tuple: A tuple containing the sorted list and a metrics dictionary.
@@ -12,10 +12,10 @@ def insertionSort(numbers):
                 - 'comparisons': Number of comparisons made during sorting
                 - 'moves': Number of element moves during sorting
     """
-    
+
     moves, comparisons = 0,0
     if len(numbers) <= 1:
-        return numbers
+        return numbers, {'comparisons': comparisons, 'moves': moves}
     for i in range (1, len(numbers)):
         key = numbers[i]
         j = i - 1

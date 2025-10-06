@@ -15,9 +15,9 @@ def radix_sort(numbers):
     """
     # Early exit for edge cases
     if not numbers:
-        return []
+        return [], {'moves': 0}
     if len(numbers) == 1:
-        return numbers.copy()
+        return numbers.copy(), {'moves': 0}
     
     move_count = 0
     
