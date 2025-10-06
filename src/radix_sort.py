@@ -7,9 +7,11 @@ def radix_sort(numbers):
         numbers: List of integers to be sorted
         
     Returns:
-        List of sorted integers (new list, preserves original)
-        metrics: Dictionary with performance metrics
-            - 'moves': Number of element moves during sorting
+        tuple: A tuple containing the sorted list and a metrics dictionary.
+            - sorted list (list[int])
+            - metrics (dict): Dictionary with performance metrics
+                - 'comparisons': Number of comparisons made during sorting
+                - 'moves': Number of element moves during sorting
     """
     # Early exit for edge cases
     if not numbers:

@@ -4,13 +4,13 @@ import random
 import time
 import os
 
-from insertion_sort import insertion_sort
+from insertion_sort import insertionSort
 from merge_sort import merge_sort
 from quicksort import quickSort
 from radix_sort import radix_sort
 
 ALGORITHMS = {
-    'insertion': insertion_sort,
+    'insertion': insertionSort,
     'merge': merge_sort,
     'quicksort': quickSort,
     'radix': radix_sort,
@@ -18,7 +18,7 @@ ALGORITHMS = {
 
 DEFAULT_TEST_MATRIX = [
     ('random', 1000, ['insertion', 'merge', 'quicksort', 'radix']),
-    # ('nearly_sorted', 5000, ['insertion', 'merge', 'quicksort']),
+    ('nearly_sorted', 5000, ['insertion', 'merge', 'quicksort']),
     ('reverse', 1000, ['insertion', 'merge', 'quicksort', 'radix']),
     ('duplicates', 20000, ['insertion', 'merge', 'quicksort', 'radix']),
 ]
@@ -53,7 +53,15 @@ def generate_dataset(dataset_type, size, seed=None):
     elif dataset_type == 'duplicates':
         return [random.randint(0, 99) for _ in range(size)]
     
-    # elif dataset_type == 'nearly_sorted':
+    elif dataset_type == 'nearly_sorted':
+        arr = list(range(size))
+        # randomly swap about 5% of the elements to achieve a 'nearly sorted' effect
+        num_swaps = size // 20
+        for _ in range(num_swaps):
+            i = random.randint(0, size - 1)
+            j = random.randint(0, size - 1)
+            arr[i], arr[j] = arr[j], arr[i]
+        return arr
     
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
@@ -256,7 +264,7 @@ def main():
                     
                     print(f"    Trial {trial}: {time_ms:.3f} ms, "
                           f"Comparisons: {row_data.get('comparisons', 0)}, "
-                          f"Swaps/Moves: {row_data.get('swaps_or_moves', 0)}")
+                          f"Moves: {row_data.get('swaps_or_moves', 0)}")
                 
                 except Exception as e:
                     print(f"    Trial {trial} failed: {e}")

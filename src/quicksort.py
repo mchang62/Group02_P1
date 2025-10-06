@@ -6,6 +6,16 @@ def quickSort(a: list[int], pivot: str = "median3") -> tuple[list[int], dict]:
     """
     Sorts a list and counts its internal operations (Internal Instrumentation).
     NOTE: This function does NOT know it is being timed.
+
+    Args: 
+        a (list[int]): The list of integers to sort.
+        pivot (str): The pivot selection strategy ("first" or "median3").
+    Returns:
+        tuple: A tuple containing the sorted list and a metrics dictionary.
+            - sorted list (list[int])
+            - metrics (dict): Dictionary with performance metrics
+                - 'comparisons': Number of comparisons made during sorting
+                - 'moves': Number of element moves during sorting
     """
     comparisonCount = 0
     moveCount = 0
