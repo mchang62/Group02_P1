@@ -185,6 +185,188 @@ def append_csv_row(filepath, row_data):
         ])
 
 
+def is_non_decreasing(lst):
+    """
+    Verify that a list is sorted in non-decreasing order.
+
+    Args:
+        lst: List to check
+
+    Returns:
+        Boolean indicating if list is non-decreasing
+    """
+    for i in range(len(lst) - 1):
+        if lst[i] > lst[i + 1]:
+            return False
+    return True
+
+
+def run_basic_sanity_tests(algo_name, algo_func, pivot='median3'):
+    """
+    Run basic sanity tests on a sorting algorithm.
+
+    Args:
+        algo_name: Name of the algorithm
+        algo_func: Function to test
+        pivot: Pivot strategy for quicksort
+
+    Returns:
+        Boolean indicating if all tests passed
+    """
+    test_cases = {
+        "Empty list": [],
+        "Single element": [42],
+        "Already sorted": [10, 20, 30, 40, 50, 60],
+        "All equal": [7, 7, 7, 7, 7],
+        "Negatives present": [-5, 100, -1, 0, 42, -99]
+    }
+
+    all_passed = True
+
+    for test_name, test_data in test_cases.items():
+        try:
+            # Run the algorithm
+            if algo_name == 'quicksort':
+                sorted_result, metrics = algo_func(test_data, pivot=pivot)
+            else:
+                sorted_result, metrics = algo_func(test_data)
+
+            # Verify non-decreasing order
+            if not is_non_decreasing(sorted_result):
+                print(f"  [FAIL] {test_name}: Output is not non-decreasing")
+                all_passed = False
+                continue
+
+            # Compare to Python's sorted() for correctness
+            expected = sorted(test_data)
+            if sorted_result != expected:
+                print(f"  [FAIL] {test_name}: Does not match sorted()")
+                all_passed = False
+                continue
+
+            # Verify metrics are returned
+            if not isinstance(metrics, dict):
+                print(f"  [FAIL] {test_name}: Metrics not returned as dict")
+                all_passed = False
+                continue
+
+            print(f"  [PASS] {test_name}")
+
+        except Exception as e:
+            print(f"  [FAIL] {test_name}: Exception - {e}")
+            all_passed = False
+
+    return all_passed
+
+
+def run_smoke_tests(algo_name, algo_func, pivot='median3', seed=42):
+    """
+    Run smoke tests with N=50 on all dataset types.
+
+    Args:
+        algo_name: Name of the algorithm
+        algo_func: Function to test
+        pivot: Pivot strategy for quicksort
+        seed: Random seed for reproducibility
+
+    Returns:
+        Boolean indicating if all smoke tests passed
+    """
+    dataset_types = ['random', 'reverse', 'duplicates', 'nearly_sorted']
+    n = 50
+    all_passed = True
+
+    for dataset_type in dataset_types:
+        try:
+            # Generate test data
+            test_data = generate_dataset(dataset_type, n, seed)
+
+            # Run the algorithm
+            if algo_name == 'quicksort':
+                sorted_result, metrics = algo_func(test_data, pivot=pivot)
+            else:
+                sorted_result, metrics = algo_func(test_data)
+
+            # Verify correctness
+            expected = sorted(test_data)
+            if sorted_result != expected:
+                print(f"  [FAIL] Smoke test ({dataset_type}): Incorrect output")
+                all_passed = False
+                continue
+
+            # Verify counters increased (radix sort only tracks moves)
+            if algo_name == 'radix':
+                moves = metrics.get('moves', 0)
+                if moves <= 0:
+                    print(f"  [FAIL] Smoke test ({dataset_type}): Moves counter did not increase")
+                    all_passed = False
+                    continue
+            else:
+                comparisons = metrics.get('comparisons', 0)
+                moves_or_swaps = metrics.get('swaps', 0) or metrics.get('moves', 0)
+
+                if comparisons <= 0:
+                    print(f"  [FAIL] Smoke test ({dataset_type}): Comparisons counter did not increase")
+                    all_passed = False
+                    continue
+
+                if moves_or_swaps <= 0:
+                    print(f"  [FAIL] Smoke test ({dataset_type}): Moves/swaps counter did not increase")
+                    all_passed = False
+                    continue
+
+            print(f"  [PASS] Smoke test ({dataset_type}, N={n})")
+
+        except Exception as e:
+            print(f"  [FAIL] Smoke test ({dataset_type}): Exception - {e}")
+            all_passed = False
+
+    return all_passed
+
+
+def run_sanity_checks(pivot='median3', seed=42):
+    """
+    Run comprehensive sanity checks on all sorting algorithms.
+
+    Args:
+        pivot: Pivot strategy for quicksort
+        seed: Random seed for reproducibility
+
+    Returns:
+        Boolean indicating if all sanity checks passed
+    """
+    print("=" * 60)
+    print("RUNNING SANITY CHECKS")
+    print("=" * 60)
+
+    all_algorithms_passed = True
+
+    for algo_name, algo_func in ALGORITHMS.items():
+        print(f"\nTesting {algo_name.upper()}:")
+        print("-" * 40)
+
+        # Run basic sanity tests
+        basic_passed = run_basic_sanity_tests(algo_name, algo_func, pivot)
+
+        # Run smoke tests
+        smoke_passed = run_smoke_tests(algo_name, algo_func, pivot, seed)
+
+        if basic_passed and smoke_passed:
+            print(f"✓ {algo_name.upper()} passed all sanity checks")
+        else:
+            print(f"✗ {algo_name.upper()} FAILED sanity checks")
+            all_algorithms_passed = False
+
+    print("\n" + "=" * 60)
+    if all_algorithms_passed:
+        print("ALL SANITY CHECKS PASSED")
+    else:
+        print("SANITY CHECKS FAILED - HALTING EXECUTION")
+    print("=" * 60 + "\n")
+
+    return all_algorithms_passed
+
+
 def main():
     """
     Main driver function for running sorting experiments.
@@ -199,13 +381,21 @@ def main():
     parser.add_argument('--seed', type=int, default=42, help='Random seed for dataset generation (default: 42)')
     parser.add_argument('--out', type=str, default='results/runs.csv', help='Output CSV file path')
     parser.add_argument('--warmup', action='store_true', help='Run warmup trial before measurements')
-    
+    parser.add_argument('--skip-sanity', action='store_true', help='Skip sanity checks before running experiments')
+
     args = parser.parse_args()
+
+    # Run sanity checks unless skipped
+    if not args.skip_sanity:
+        sanity_passed = run_sanity_checks(pivot=args.pivot, seed=args.seed)
+        if not sanity_passed:
+            print("\nExiting due to failed sanity checks.")
+            return
 
     # Create results directory and results csv if they don't exist
     os.makedirs(os.path.dirname(args.out) if os.path.dirname(args.out) else '.', exist_ok=True)
     write_csv_header(args.out)
-    
+
     # Build test matrix according to provided arguments
     try:
         test_matrix = build_test_matrix(args)
